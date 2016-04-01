@@ -19,7 +19,7 @@ function main(url) {
   })
   .then(function (unfilteredbytes) {
     return runWithBrowserContainer(function(container) {
-      return uploadHostsFile(container, './hosts').then(getUrl.bind(null, url));
+      return uploadHostsFile(container, './hosts').then(getUrl.bind(null, url, container));
     })
     .progress(function(downloadedBytes) {
       var text = sprintf("of which %.1f%% is crap.  ",
@@ -45,8 +45,8 @@ function main(url) {
 main(process.argv[2])
 
 
-function getUrl(url) {
-  var browser = wd.promiseChainRemote({hostname: '192.168.99.100'});
+function getUrl(url, container) {
+  var browser = wd.promiseChainRemote({hostname: container.ip});
 
   return browser
   .init({browserName:'firefox'})

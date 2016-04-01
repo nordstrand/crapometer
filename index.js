@@ -12,30 +12,30 @@ function main(url) {
   assert(url, 'URL to measure must be defined')
 
   runWithBrowserContainer(getUrl.bind(null, url))
-  .progress(function(downloadedBytes) {
+  .progress((downloadedBytes) => {
     var text = sprintf("'%s' page weight: %-10s ", url, bytes(downloadedBytes));
     term.column(1, text)
         //.hideCursor();
   })
   .then(function (unfilteredbytes) {
-    return runWithBrowserContainer(function(container) {
+    return runWithBrowserContainer((container) => {
       return uploadHostsFile(container, './hosts').then(getUrl.bind(null, url, container));
     })
-    .progress(function(downloadedBytes) {
+    .progress((downloadedBytes) => {
       var text = sprintf("of which %.1f%% is crap.  ",
           (100 * (unfilteredbytes - downloadedBytes)) / unfilteredbytes);
       term(text).left(text.length);
     })
-    .finally(function() {
+    .finally(() => {
       term.nextLine()
         //.hideCursor();
       console.error('Done');
     });
   })
-  .catch(function(error) {
+  .catch((error) =>  {
     console.log("ERROR:", error);
   })
-  .finally(function() {
+  .finally(() => {
     term.nextLine()
         .showCursor();
     console.error('Done');
@@ -55,18 +55,18 @@ function getUrl(url, container) {
 //     var data = new Buffer(res, 'base64');
 //     fs.writeFileSync('site.png', data);
 //  })
-  .finally(function() { console.error('Browser quit'); return browser.quit(); })
+  .finally(() => { console.error('Browser quit'); return browser.quit(); })
 }
 
 function uploadHostsFile(container, file) {
-  var deferred = Q.defer();
+  const deferred = Q.defer();
 
 	container.exec({
     Cmd: ['bash', '-c', 'cat - > /etc/hosts'],
     AttachStdin: true,
     User: 'root'
-  }, function(err, exec) {
-    exec.start({hijack: true, stdin: true}, function(err, stream) {
+  },(err, exec) => {
+    exec.start({hijack: true, stdin: true}, (err, stream) => {
       fs.createReadStream('./hosts', 'binary')
       .on('end', deferred.resolve)
       .pipe(stream);

@@ -1,5 +1,6 @@
 var assert = require('assert');
 var fs = require('fs');
+
 var wd = require('wd');
 var Q = require('q');
 var term = require( 'terminal-kit' ).terminal;
@@ -7,14 +8,14 @@ var bytes = require('bytes');
 var sprintf = require('sprintf-js').sprintf;
 
 var runWithBrowserContainer = require('./lib/browser').runWithBrowserContainer;
+var injectHostsFile = require('./lib/hosts'); 
 
 function main(url) {
-  assert(url, 'URL to measure must be defined')
-
+  assert(url, 'URL to measure must be defined');
 
   function logPageWeight(b) {
     var text = sprintf("'%s' page weight: %-10s ", url, bytes(b));
-    term.column(1, text)
+    term.column(1, text);
       //.hideCursor();
    }
 
@@ -29,13 +30,13 @@ function main(url) {
   .then((unfilteredbytes) => {
     logPageWeight(unfilteredbytes);
 
-    return runWithBrowserContainer((container) => {
-      return uploadHostsFile(container, './hosts').then(getUrl.bind(null, url, container));
+    return runWithBrowserContainer(container => {
+      return injectHostsFile(container).then(getUrl.bind(null, url, container));
     })
     .progress(logCrapRate.bind(null, unfilteredbytes))
     .then(logCrapRate.bind(null, unfilteredbytes))
     .finally(() => {
-      term.nextLine()
+      term.nextLine();
         //.hideCursor();
     });
   })
@@ -49,7 +50,7 @@ function main(url) {
   });
 }
 
-main(process.argv[2])
+main(process.argv[2]);
 
 
 function getUrl(url, container) {
@@ -62,25 +63,8 @@ function getUrl(url, container) {
 //     var data = new Buffer(res, 'base64');
 //     fs.writeFileSync('site.png', data);
 //  })
-  .finally(() => { return browser.quit(); })
+  .finally(() => { return browser.quit(); });
 }
 
-function uploadHostsFile(container, file) {
-  const deferred = Q.defer();
-
-	container.exec({
-    Cmd: ['bash', '-c', 'cat - > /etc/hosts'],
-    AttachStdin: true,
-    User: 'root'
-  },(err, exec) => {
-    exec.start({hijack: true, stdin: true}, (err, stream) => {
-      fs.createReadStream('./hosts', 'binary')
-      .on('end', deferred.resolve)
-      .pipe(stream);
-    });
-  });
-
-  return deferred.promise;
-}
 
 

@@ -11,6 +11,7 @@
   "dependencies": {
     "bytes": "^2.3.0",
     "dockerode": "^2.2.10",
+    "got": "^6.2.0",
     "q": "^1.4.1",
     "sprintf-js": "^1.0.3",
     "terminal-kit": "^0.24.0",

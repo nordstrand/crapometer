@@ -11,25 +11,32 @@ var runWithBrowserContainer = require('./lib/browser').runWithBrowserContainer;
 function main(url) {
   assert(url, 'URL to measure must be defined')
 
-  runWithBrowserContainer(getUrl.bind(null, url))
-  .progress((downloadedBytes) => {
-    var text = sprintf("'%s' page weight: %-10s ", url, bytes(downloadedBytes));
+
+  function logPageWeight(b) {
+    var text = sprintf("'%s' page weight: %-10s ", url, bytes(b));
     term.column(1, text)
-        //.hideCursor();
-  })
-  .then(function (unfilteredbytes) {
+      //.hideCursor();
+   }
+
+  function logCrapRate(crappyBytes, nonCrapBytes) {
+    var text = sprintf("of which %.0f%% is crap.  ",
+        (100 * (Math.max(0, crappyBytes - nonCrapBytes))) / crappyBytes);
+    term(text).left(text.length);
+  }
+
+  runWithBrowserContainer(getUrl.bind(null, url))
+  .progress(logPageWeight)
+  .then((unfilteredbytes) => {
+    logPageWeight(unfilteredbytes);
+
     return runWithBrowserContainer((container) => {
       return uploadHostsFile(container, './hosts').then(getUrl.bind(null, url, container));
     })
-    .progress((downloadedBytes) => {
-      var text = sprintf("of which %.1f%% is crap.  ",
-          (100 * (unfilteredbytes - downloadedBytes)) / unfilteredbytes);
-      term(text).left(text.length);
-    })
+    .progress(logCrapRate.bind(null, unfilteredbytes))
+    .then(logCrapRate.bind(null, unfilteredbytes))
     .finally(() => {
       term.nextLine()
         //.hideCursor();
-      console.error('Done');
     });
   })
   .catch((error) =>  {
@@ -46,7 +53,7 @@ main(process.argv[2])
 
 
 function getUrl(url, container) {
-  var browser = wd.promiseChainRemote({hostname: container.ip});
+  const browser = wd.promiseChainRemote({hostname: container.ip});
 
   return browser
   .init({browserName:'firefox'})
@@ -55,7 +62,7 @@ function getUrl(url, container) {
 //     var data = new Buffer(res, 'base64');
 //     fs.writeFileSync('site.png', data);
 //  })
-  .finally(() => { console.error('Browser quit'); return browser.quit(); })
+  .finally(() => { return browser.quit(); })
 }
 
 function uploadHostsFile(container, file) {

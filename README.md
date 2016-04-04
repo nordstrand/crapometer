@@ -13,7 +13,7 @@ The web site is is download twice in a Firefox container: first with no form of 
 and then with a pretty restrictive hosts file injected. The difference in download size is
 considered to consist of **crap**.
 
-A running dockerd is a prerequisite for executing this utillity. Docker-machine should work.
+A running dockerd is a prerequisite for executing this utillity. Docker-machine should work too.
 
 
 

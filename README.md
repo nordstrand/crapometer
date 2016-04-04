@@ -10,10 +10,10 @@ A simple utillity that provides an unbiased measure of web page crappiness
 ## Mechanism
 
 The web site is is download twice in a Firefox container: first with no form of ad-blocking,
-and then with a pretty restrictive hosts file inject. The difference in download size is
-considers to consist of **crap**.
+and then with a pretty restrictive hosts file injected. The difference in download size is
+considered to consist of **crap**.
 
-A running dockerd is a prerequisite for executing this utillity.
+A running dockerd is a prerequisite for executing this utillity. Docker-machine should work.
 
 
 
